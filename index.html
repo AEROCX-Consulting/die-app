@@ -40,7 +40,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
  .homebar{display:none}
  #device{transform:none!important;margin:0!important}
  #device::before,#device::after{display:none}
- #demo{position:fixed;inset:auto 0 0 0;max-height:82dvh;border-radius:24px 24px 0 0;transform:translateY(105%);transition:transform .3s;z-index:200;width:auto!important;padding-bottom:calc(16px + var(--sbm))}
+ #demo{position:fixed;inset:auto 0 0 0;max-height:82vh!important;max-height:80svh!important;max-height:var(--demo-h,80svh)!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:24px 24px 0 0;transform:translateY(105%);transition:transform .3s;z-index:200;width:auto!important;padding-bottom:calc(16px + var(--sbm))}
  #demo.open{transform:none}
  #demo .grab{display:block!important}
 }
@@ -348,7 +348,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .note{margin-top:14px;background:var(--warn-bg);color:#5A3D00;border-radius:14px;padding:10px 12px;font-size:11.5px;line-height:1.45}
 #pm{position:absolute;left:3px;top:max(4px,calc(var(--st) - 4px));width:26px;height:26px;z-index:130;display:grid;place-items:center;background:none;border:0;padding:0}
 #pm i{display:block;width:7px;height:7px;border-radius:50%;border:1.5px solid rgba(255,255,255,.38)}
-#demo .dhd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+#demo .dhd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:sticky;top:-20px;z-index:3;background:#fff;margin:-12px -20px 0;padding:12px 20px 8px}
 #demo .dx{width:34px;height:34px;border-radius:50%;background:var(--paper);border:1px solid var(--line);font-size:18px;font-weight:800;color:var(--ink);display:grid;place-items:center;flex:none}
 #demo.hide{display:none}
 </style>
@@ -594,7 +594,9 @@ $$('#demo .segs button').forEach(b=>b.onclick=()=>{S.seg=+b.dataset.s;S.tyre=S.w
 $$('#demo [data-e]').forEach(b=>b.onclick=()=>{const e=EV[b.dataset.e];if(!e.ok(seg())){toast(`"${e.n}" doesn't apply to this segment`);return}closeDemoMobile();setTimeout(()=>e.run(),250)});
 $$('#demo [data-x]').forEach(b=>b.onclick=()=>{const x=b.dataset.x;closeDemoMobile();if(x==='banner'){S.banner=!S.banner;show('home');rDemo()}if(x==='onb')startOnb();if(x==='charge'){show('charge')}if(x==='rewards')show('rewards');if(x==='wrap')openWrap()})}
 const isMob=()=>innerWidth<=600;
-function openDemo(){const d=$('#demo');d.classList.remove('hide');d.classList.add('open')}
+function sizeDemo(){if(!isMob())return;const d=$('#demo'),h=(window.visualViewport?visualViewport.height:innerHeight);d.style.maxHeight='';d.style.setProperty('--demo-h',Math.round(h*0.85)+'px')}
+if(window.visualViewport)visualViewport.addEventListener('resize',sizeDemo);addEventListener('orientationchange',()=>setTimeout(sizeDemo,300));
+function openDemo(){const d=$('#demo');sizeDemo();d.scrollTop=0;d.classList.remove('hide');d.classList.add('open')}
 function closeDemo(){const d=$('#demo');d.classList.remove('open');if(!isMob())d.classList.add('hide')}
 function closeDemoMobile(){$('#demo').classList.remove('open')}
 $('#pm').onclick=e=>{e.stopPropagation();const d=$('#demo');(d.classList.contains('open')||(!isMob()&&!d.classList.contains('hide')))?closeDemo():openDemo()};
@@ -602,7 +604,7 @@ document.addEventListener('click',e=>{if(e.target.closest('#dx'))closeDemo()});
 let lt=0;$('#logo').onclick=()=>{const n=Date.now();if(n-lt<400)openDemo();lt=n};
 document.addEventListener('click',e=>{const d=$('#demo');if(d.classList.contains('open')&&!d.contains(e.target)&&e.target.closest('#pm')===null&&!e.target.closest('[onclick*="openDemo"]')&&e.target.id!=='logo')d.classList.remove('open')},true);
 /* ---------- fit device on desktop ---------- */
-function fitDevice(){const d=$('#device');if(innerWidth<=600){d.style.transform='';d.style.margin='';return}const sc=Math.min(1,(innerHeight-40)/980);d.style.transform=`scale(${sc})`;d.style.margin=`${-980*(1-sc)/2}px ${-464*(1-sc)/2}px`;$('#demo').style.maxHeight=(980*sc)+'px'}
+function fitDevice(){const d=$('#device');if(innerWidth<=600){d.style.transform='';d.style.margin='';$('#demo').style.maxHeight='';sizeDemo();return}const sc=Math.min(1,(innerHeight-40)/980);d.style.transform=`scale(${sc})`;d.style.margin=`${-980*(1-sc)/2}px ${-464*(1-sc)/2}px`;$('#demo').style.maxHeight=(980*sc)+'px'}
 addEventListener('resize',fitDevice);fitDevice();
 /* ---------- offline app (when hosted) ---------- */
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
